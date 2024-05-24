@@ -73,32 +73,70 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 def depthFirstSearch(problem):
-    """
-    Search the deepest nodes in the search tree first.
+    S = util.Stack()
+    S.push((problem.getStartState(), []))
+    visited_nodes = set()
 
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
+    while not S.isEmpty():
 
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
+        current_node, moves = S.pop()
 
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
-    """
-    "*** YOUR CODE HERE ***"
+        if problem.isGoalState(current_node):
+            return moves
+        
+        visited_nodes.add(current_node)
+        nodes = problem.getSuccessors(current_node)
+
+        for next_node, action, _ in nodes:
+            if next_node not in visited_nodes:
+                S.push((next_node, moves + [action]))
+
+    return []
     util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
+    Q = util.Queue()
+    visited_nodes = set()
+    Q.push((problem.getStartState(), [], 0))
+    while not Q.isEmpty():
+        current_nodes, moves, Cost = Q.pop()
+
+        if current_nodes not in visited_nodes:
+            visited_nodes.add(current_nodes)
+            if problem.isGoalState(current_nodes):
+                return moves
+            else:
+                nodes = problem.getSuccessors(current_nodes)
+                for next_nodes, action, nextCost in nodes:
+                    newAction = moves + [action]
+                    newCost = Cost + nextCost
+                    child = (next_nodes, newAction, newCost)
+                    Q.push(child)
+
+    return moves
+
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
+    Q = util.PriorityQueue()
+    Q.push((problem.getStartState(), []),0)
+    visited_nodes = set()
+    while not Q.isEmpty():
+        current_node, moves = Q.pop()
+        if problem.isGoalState(current_node):
+            return moves
+        if current_node not in visited_nodes:
+            next_nodes = problem.getSuccessors(current_node)
+            for next in next_nodes:
+                peculiarities = next[0]
+                if peculiarities not in visited_nodes:
+                    directions = next[1]
+                    newCost = moves + [directions]
+                    Q.push((peculiarities, moves + [directions]), problem.getCostOfActions(newCost))
+        visited_nodes.add(current_node)
+    return []
     util.raiseNotDefined()
-
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
@@ -109,8 +147,26 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    visited_nodes = set()
+    Q = util.PriorityQueue()
+    Q.push((problem.getStartState(), []),nullHeuristic((problem.getStartState(),[]), problem))
+    n_cost = 0
+    while not Q.isEmpty():
+        current_node, moves = Q.pop()
+        if problem.isGoalState(current_node):
+            return moves
+        if current_node not in visited_nodes:
+            next_nodes = problem.getSuccessors(current_node)
+            for next in next_nodes:
+                peculiarities = next[0]
+                if peculiarities not in visited_nodes:
+                    directions = next[1]
+                    n_actions = moves + [directions]
+                    n_cost = problem.getCostOfActions(n_actions) + heuristic(peculiarities, problem)
+                    Q.push((peculiarities, moves + [directions]), n_cost)
+        visited_nodes.add(current_node)
+    return moves
     util.raiseNotDefined()
-
 
 # Abbreviations
 bfs = breadthFirstSearch
